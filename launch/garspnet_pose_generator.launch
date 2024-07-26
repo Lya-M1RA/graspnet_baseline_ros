@@ -1,0 +1,3 @@
+<launch>
+  <node name="pose_generator" pkg="graspnet_baseline_ros" type="pose_generator.py" output="screen"/>
+</launch>
