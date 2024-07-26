@@ -46,9 +46,8 @@ class GraspNetROS:
         self.color_image = None
         self.depth_image = None
         self.grasp_start = False
-        self.color_sub = Subscriber("/d435_camera/color/image_raw", RosImage)
-        # self.depth_sub = Subscriber("/d435_camera/aligned_depth_to_color/image_raw", RosImage)
-        self.depth_sub = Subscriber("/d435_camera/depth/image_raw", RosImage)
+        self.color_sub = Subscriber("/camera/color/image_raw", RosImage)
+        self.depth_sub = Subscriber("/camera/depth/image_raw", RosImage)
         self.ats = ApproximateTimeSynchronizer([self.color_sub, self.depth_sub], queue_size=1, slop=0.05)
         self.ats.registerCallback(self.image_callback)
         self.trigger_sub = rospy.Subscriber("/grasp_start", Bool, self.process_data)
@@ -85,9 +84,9 @@ class GraspNetROS:
             color = np.array(self.color_image, dtype=np.float32) / 255.0
             depth = np.array(self.depth_image)
             workspace_mask = np.ones_like(depth, dtype=bool)  # Assuming whole image is workspace for simplicity
-            intrinsic = np.array([[912.135877,          0, 631.980233],
-                                  [         0, 913.634983, 357.925331],
-                                  [         0,          0,          1]])
+            intrinsic = np.array([[924.28,      0, 640.0],
+                                  [     0, 924.28, 360.0],
+                                  [     0,      0,     1]])
             factor_depth = 1000.0
 
             camera = CameraInfo(1280.0, 720.0, intrinsic[0][0], intrinsic[1][1], intrinsic[0][2], intrinsic[1][2], factor_depth)
@@ -152,19 +151,20 @@ class GraspNetROS:
         gg.sort_by_score()
         best_grasp = gg[0]  # Get the top grasp
 
+        # Modify this if you want to change the pose of the gripper
         T = np.array([
-            [0, 0, 1],
-            [-1, 0, 0],
-            [0, -1, 0]
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
         ])
         rotation_matrix = np.dot(T, best_grasp.rotation_matrix)
         quaternion = R.from_matrix(rotation_matrix).as_quat()
 
         pose_msg = PoseStamped()
-        pose_msg.header = Header(stamp=rospy.Time.now(), frame_id="d435_camera_link")
-        pose_msg.pose.position.x = best_grasp.translation[2]
-        pose_msg.pose.position.y = -best_grasp.translation[0]
-        pose_msg.pose.position.z = -best_grasp.translation[1]
+        pose_msg.header = Header(stamp=rospy.Time.now(), frame_id="camera_link")
+        pose_msg.pose.position.x = best_grasp.translation[0]
+        pose_msg.pose.position.y = best_grasp.translation[1]
+        pose_msg.pose.position.z = best_grasp.translation[2]
         pose_msg.pose.orientation.x = quaternion[0]
         pose_msg.pose.orientation.y = quaternion[1]
         pose_msg.pose.orientation.z = quaternion[2]
@@ -173,7 +173,7 @@ class GraspNetROS:
         rospy.loginfo("Published PoseStamped to /grasp_pose_stamped")
 
         gripper_arg_msg = GraspGripperArg()
-        gripper_arg_msg.header = Header(stamp=rospy.Time.now(), frame_id="4cx_gripper")
+        gripper_arg_msg.header = Header(stamp=rospy.Time.now(), frame_id="gripper")
         gripper_arg_msg.depth = best_grasp.depth
         gripper_arg_msg.width = best_grasp.width
         self.gripper_arg_pub.publish(gripper_arg_msg)

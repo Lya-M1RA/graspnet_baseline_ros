@@ -62,4 +62,11 @@ The pretrained weights can be downloaded from:
 
 Now you can use catkin to build the package.
 
+## Usage
+Launch the node.
+```bash
+roslaunch graspnet_baseline_ros graspnet_pose_generator.launch
+```
+Some parts of `pose_generator.py` should be modified before use to fit your configuration.
 
+The node subscribes the color and depth images topic of the RGBD camera, and would be triggered once if receive a `True` on `/grasp_start` topic. The generated grasp pose and the gripper width and depth are published to `/grasp_pose_stamped` and `/grasp_gripper_arg_stamped`.
