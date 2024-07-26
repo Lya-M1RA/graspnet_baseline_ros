@@ -41,7 +41,7 @@ Compile and install knn operator (code adapted from [pytorch_knn_cuda](https://g
 cd src/knn
 python setup.py install
 ```
-Install graspnetAPI for evaluation (code adapted from [graspnetAPI](https://github.com/graspnet/graspnetAPI))..
+Install graspnetAPI for evaluation (code adapted from [graspnetAPI](https://github.com/graspnet/graspnetAPI)).
 ```bash
 cd src/graspnetAPI
 pip install .
