@@ -70,3 +70,13 @@ roslaunch graspnet_baseline_ros graspnet_pose_generator.launch
 Some parts of `pose_generator.py` should be modified before use to fit your configuration.
 
 The node subscribes the color and depth images topic of the RGBD camera, and would be triggered once if receive a `True` on `/grasp_start` topic. The generated grasp pose and the gripper width and depth are published to `/grasp_pose_stamped` and `/grasp_gripper_arg_stamped`.
+
+## Troubleshooting  
+### PyTorch on Tegra
+
+### cvxopt on Tegra
+If you are using a Jetson board, it's probably that you will encounter `umfpack.h: No such file or directory` when building wheel for cvxopt. It happens when executing `pip install .` in `graspnetAPI` folder.
+To solve the issue, please refer to this https://github.com/cvxopt/cvxopt/issues/125
+
+### empy
+https://stackoverflow.com/questions/77642155/attributeerror-module-object-has-no-attribute-raw-opt/77656642#77656642
